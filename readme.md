@@ -1,6 +1,6 @@
 # Online Status
 
-This packages adds functionality to show user online status, online users and online user number in your laravel app. This package can be used in __aravel 5.5 or higher__.
+This packages adds functionality to show user online status, online users and online user number in your laravel app. This package can be used in __laravel 5.5 or higher__.
 
 ## Installation
 
