@@ -10,4 +10,9 @@ class User extends Model implements Authenticatable
         HasOnlineStatus;
 
     protected $connection = 'testbench';
+
+    public static function getOnlineExpirationInMinutes() : int
+    {
+        return 10;
+    }
 }

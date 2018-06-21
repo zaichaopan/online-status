@@ -17,7 +17,7 @@ trait HasOnlineStatus
             return false;
         }
 
-        return (int) $time > $this->freshTimestamp()->subMinutes(static::getExpirationTimeInMinutes())->timestamp;
+        return (int) $time > $this->freshTimestamp()->subMinutes(static::getOnlineExpirationInMinutes())->timestamp;
     }
 
     public function online($time = null): void
@@ -57,14 +57,14 @@ trait HasOnlineStatus
         return Redis::zcount(static::getOnlineCacheKey(), static::getMinScore(), '+inf');
     }
 
-    public static function getExpirationTimeInMinutes(): int
+    public static function getOnlineExpirationInMinutes(): int
     {
-        return 10;
+        return config('session.lifetime');
     }
 
     protected static function getMinScore(): int
     {
-        return now()->subSeconds(static::getExpirationTimeInMinutes() * 60)->timestamp;
+        return now()->subSeconds(static::getOnlineExpirationInMinutes() * 60)->timestamp;
     }
 
     protected static function getOnlineCacheKey(): string

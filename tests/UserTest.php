@@ -24,7 +24,7 @@ class UserTest extends TestCase
         $this->assertTrue($this->user->isOnline());
         $this->assertTrue($this->user->isOnline);
 
-        $time = now()->subSeconds(User::getExpirationTimeInMinutes() * 60 + 1)->timestamp;
+        $time = now()->subSeconds(User::getOnlineExpirationInMinutes() * 60 + 1)->timestamp;
         $this->user->online($time);
 
         $this->assertFalse($this->user->isOnline());
@@ -63,7 +63,7 @@ class UserTest extends TestCase
 
         $this->assertEquals(2, User::onlineCount());
 
-        $time = now()->subSeconds(User::getExpirationTimeInMinutes() * 60 + 1)->timestamp;
+        $time = now()->subSeconds(User::getOnlineExpirationInMinutes() * 60 + 1)->timestamp;
         $this->user->online($time);
 
         $this->assertEquals(1, User::onlineCount());
@@ -89,7 +89,7 @@ class UserTest extends TestCase
         $this->assertContains($this->user->id, $onlineUserIds);
         $this->assertContains($jane->id, $onlineUserIds);
 
-        $time = now()->subSeconds(User::getExpirationTimeInMinutes() * 60 + 1)->timestamp;
+        $time = now()->subSeconds(User::getOnlineExpirationInMinutes() * 60 + 1)->timestamp;
         $this->user->online($time);
 
         $this->assertCount(1, $onlineUserIds = User::getOnlineUserIds());
@@ -118,7 +118,7 @@ class UserTest extends TestCase
         $this->assertContains($this->user->id, $onlineUserIds);
         $this->assertContains($jane->id, $onlineUserIds);
 
-        $time = now()->subSeconds(User::getExpirationTimeInMinutes() * 60 + 1)->timestamp;
+        $time = now()->subSeconds(User::getOnlineExpirationInMinutes() * 60 + 1)->timestamp;
         $this->user->online($time);
 
         $this->assertCount(1, $onlineUserIds = User::ofOnline()->get()->pluck('id')->toArray());
