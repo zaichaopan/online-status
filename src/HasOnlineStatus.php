@@ -3,35 +3,26 @@
 namespace Zaichaopan\OnlineStatus;
 
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Database\Eloquent\Builder;
 
 trait HasOnlineStatus
 {
-    public function getExpirationTimeInMinutes()
-    {
-        return 10;
-    }
-
     public function isOnline(): bool
     {
-        $time = Redis::zscore($this->getOnlineCacheKey, $this->getSortedSetMember());
+        $time = Redis::zscore(static::getOnlineCacheKey(), $this->getSortedSetMember());
 
         if (is_null($time)) {
             return false;
         }
 
-        return $this->freshTimestamp()->diffInMinutes($time) < $this->getExpirationTimeInMinutes();
+        return (int) $time > $this->freshTimestamp()->subMinutes(static::getExpirationTimeInMinutes())->timestamp;
     }
 
-    public function setOnlineStatus(): void
+    public function online($time = null): void
     {
-        Redis::zadd($this->getOnlineCacheKey(), now(), $this->getSortedSetMember());
-    }
+        $time = $time ?? time();
 
-    public function onlineCount(): bool
-    {
-        $minTime = now()->subMinutes($this->getExpirationTimeInMinutes() + 1);
-
-        return  Redis::zcount($this->getOnlineCacheKey(), $minTime, '+inf');
+        Redis::zadd(static::getOnlineCacheKey(), $time, $this->getSortedSetMember());
     }
 
     public function getIsOnlineAttribute(): bool
@@ -41,16 +32,41 @@ trait HasOnlineStatus
 
     public function offline(): void
     {
-        Redis::zrem($this->getOnlineCacheKey(), $this->sortedSetMember());
+        Redis::zrem(static::getOnlineCacheKey(), $this->getSortedSetMember());
     }
 
-    protected function getOnlineCacheKey(): string
+    public function scopeOfOnline(Builder $builder): Builder
+    {
+        return $builder->whereIn('id', static::getOnlineUserIds());
+    }
+
+    public static function getOnlineUserIds(): ?array
+    {
+        return Redis::zrevrangebyscore(static::getOnlineCacheKey(), '+inf', static::getMinScore());
+    }
+
+    public static function onlineCount(): int
+    {
+        return  Redis::zcount(static::getOnlineCacheKey(), static::getMinScore(), '+inf');
+    }
+
+    public static function getExpirationTimeInMinutes(): int
+    {
+        return 10;
+    }
+
+    protected static function getMinScore(): int
+    {
+        return now()->subSeconds(static::getExpirationTimeInMinutes() * 60)->timestamp;
+    }
+
+    protected static function getOnlineCacheKey(): string
     {
         return 'users.online';
     }
 
     protected function getSortedSetMember(): string
     {
-        return 'user.' . $this->id;
+        return $this->id;
     }
 }

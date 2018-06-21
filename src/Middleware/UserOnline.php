@@ -16,7 +16,7 @@ class UserOnline
      */
     public function handle(Request $request, Closure $next)
     {
-        optional($request->user())->setOnlineStatus();
+        optional($request->user())->online();
 
         return $next($request);
     }
