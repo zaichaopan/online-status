@@ -11,7 +11,6 @@ class LogoutListener
      */
     public function __construct()
     {
-        //
     }
 
     /**

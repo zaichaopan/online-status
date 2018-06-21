@@ -38,6 +38,7 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
         \Schema::create('users', function ($table) {
             $table->increments('id');
             $table->string('email');
+            $table->rememberToken();
             $table->timestamps();
         });
     }

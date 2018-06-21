@@ -47,7 +47,7 @@ trait HasOnlineStatus
 
     public static function onlineCount(): int
     {
-        return  Redis::zcount(static::getOnlineCacheKey(), static::getMinScore(), '+inf');
+        return Redis::zcount(static::getOnlineCacheKey(), static::getMinScore(), '+inf');
     }
 
     public static function getExpirationTimeInMinutes(): int
