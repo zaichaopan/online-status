@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Event;
+use Zaichaopan\OnlineStatus\Events\UserOnline;
+use Zaichaopan\OnlineStatus\Events\UserOffline;
+
 class UserTest extends TestCase
 {
     public function setUp()
@@ -123,5 +127,43 @@ class UserTest extends TestCase
         $jane->offline();
 
         $this->assertCount(0, User::ofOnline()->get());
+    }
+
+    /** @test */
+    public function it_will_fire_user_online_event_when_user_online()
+    {
+        Event::fake();
+
+        $this->user->online();
+
+        Event::assertDispatched(UserOnline::class, function ($e) {
+            return $e->user->id === $this->user->id;
+        });
+    }
+
+    /** @test */
+    public function it_will_not_fire_user_online_event_when_user_is_already_online()
+    {
+        Event::fake();
+
+        $this->user->online();
+
+        $this->user->online();
+
+        Event::assertDispatched(UserOnline::class, 1);
+    }
+
+    /** @test */
+    public function it_will_fire_user_offline_event_when_user_offline()
+    {
+        Event::fake();
+
+        $this->user->online();
+
+        $this->user->offline();
+
+        Event::assertDispatched(UserOffline::class, function ($e) {
+            return $e->user->id === $this->user->id;
+        });
     }
 }

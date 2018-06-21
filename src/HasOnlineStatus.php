@@ -4,6 +4,8 @@ namespace Zaichaopan\OnlineStatus;
 
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Eloquent\Builder;
+use Zaichaopan\OnlineStatus\Events\UserOnline;
+use Zaichaopan\OnlineStatus\Events\UserOffline;
 
 trait HasOnlineStatus
 {
@@ -22,6 +24,10 @@ trait HasOnlineStatus
     {
         $time = $time ?? time();
 
+        if (!$this->isOnline()) {
+            event(new UserOnline($this));
+        }
+
         Redis::zadd(static::getOnlineCacheKey(), $time, $this->getSortedSetMember());
     }
 
@@ -33,6 +39,7 @@ trait HasOnlineStatus
     public function offline(): void
     {
         Redis::zrem(static::getOnlineCacheKey(), $this->getSortedSetMember());
+        event(new UserOffline($this));
     }
 
     public function scopeOfOnline(Builder $builder): Builder

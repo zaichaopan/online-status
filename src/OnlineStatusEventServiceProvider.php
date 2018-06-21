@@ -13,7 +13,7 @@ class OnlineStatusEventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         'Illuminate\Auth\Events\Logout' => [
-            'Zaichaopan\OnlineStatus\Listener\LogoutListener',
+            'Zaichaopan\OnlineStatus\Listeners\LogoutListener',
         ],
     ];
 
