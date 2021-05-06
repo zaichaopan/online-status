@@ -47,9 +47,14 @@ trait HasOnlineStatus
         return $builder->whereIn('id', static::getOnlineUserIds());
     }
 
-    public static function getOnlineUserIds(): ?array
+    public static function getOnlineUserIds(): array
     {
-        return Redis::zrevrangebyscore(static::getOnlineCacheKey(), '+inf', static::getMinScore());
+        $result = Redis::zrevrangebyscore(
+            static::getOnlineCacheKey(),
+            '+inf',
+            static::getMinScore()
+        );
+        return is_array($result) ? array_map(static fn($v) => (int)$v, $result) : [];
     }
 
     public static function onlineCount(): int
