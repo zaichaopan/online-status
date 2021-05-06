@@ -9,7 +9,7 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
         return [OnlineStatusEventServiceProvider::class];
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         Eloquent::unguard();
@@ -18,7 +18,7 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
         ]);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         \Schema::drop('users');
         Redis::flushall();

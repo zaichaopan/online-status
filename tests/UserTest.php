@@ -6,7 +6,7 @@ use Zaichaopan\OnlineStatus\Events\UserOffline;
 
 class UserTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

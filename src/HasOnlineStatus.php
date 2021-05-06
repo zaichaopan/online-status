@@ -2,6 +2,7 @@
 
 namespace Zaichaopan\OnlineStatus;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Eloquent\Builder;
 use Zaichaopan\OnlineStatus\Events\UserOnline;
@@ -29,6 +30,7 @@ trait HasOnlineStatus
         }
 
         Redis::zadd(static::getOnlineCacheKey(), $time, $this->getSortedSetMember());
+        $this->updateLastChangedOnlineStatus();
     }
 
     public function getIsOnlineAttribute(): bool
@@ -36,9 +38,20 @@ trait HasOnlineStatus
         return $this->isOnline();
     }
 
+    public function getLastChangedOnlineStatusAttribute(): ?Carbon
+    {
+        $timestamp = $this->getLastChangedOnlineTimestamp();
+        if (! $timestamp) {
+            return null;
+        }
+
+        return Carbon::createFromTimestamp($timestamp);
+    }
+
     public function offline(): void
     {
         Redis::zrem(static::getOnlineCacheKey(), $this->getSortedSetMember());
+        $this->updateLastChangedOnlineStatus();
         event(new UserOffline($this));
     }
 
@@ -47,9 +60,14 @@ trait HasOnlineStatus
         return $builder->whereIn('id', static::getOnlineUserIds());
     }
 
-    public static function getOnlineUserIds(): ?array
+    public static function getOnlineUserIds(): array
     {
-        return Redis::zrevrangebyscore(static::getOnlineCacheKey(), '+inf', static::getMinScore());
+        $result = Redis::zrevrangebyscore(
+            static::getOnlineCacheKey(),
+            '+inf',
+            static::getMinScore()
+        );
+        return is_array($result) ? array_map(static fn($v) => (int)$v, $result) : [];
     }
 
     public static function onlineCount(): int
@@ -70,6 +88,23 @@ trait HasOnlineStatus
     protected static function getOnlineCacheKey(): string
     {
         return 'users.online';
+    }
+
+    protected function updateLastChangedOnlineStatus(): void
+    {
+        $key = static::getLastChangedOnlineStatusCacheKey();
+        Redis::zadd($key, time(), $this->getSortedSetMember());
+    }
+
+    protected function getLastChangedOnlineTimestamp(): int
+    {
+        $key = static::getLastChangedOnlineStatusCacheKey();
+        return (int)Redis::zscore($key, $this->getSortedSetMember());
+    }
+
+    protected static function getLastChangedOnlineStatusCacheKey(): string
+    {
+        return 'users.last-changed-online';
     }
 
     protected function getSortedSetMember(): string

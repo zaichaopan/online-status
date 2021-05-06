@@ -3,6 +3,8 @@
 namespace Zaichaopan\OnlineStatus;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Auth\Events\Logout;
+use Zaichaopan\OnlineStatus\Listeners\LogoutListener;
 
 class OnlineStatusEventServiceProvider extends ServiceProvider
 {
@@ -12,18 +14,8 @@ class OnlineStatusEventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'Illuminate\Auth\Events\Logout' => [
-            'Zaichaopan\OnlineStatus\Listeners\LogoutListener',
+        Logout::class => [
+            LogoutListener::class,
         ],
     ];
-
-    /**
-     * Register any other events for your application.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        parent::boot();
-    }
 }
